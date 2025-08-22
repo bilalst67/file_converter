@@ -3,6 +3,7 @@
 #include <string>
 #include "filefound.h"
 #include "txt.h"
+using namespace std;
 namespace fs = std::filesystem;
  
 int main()
@@ -27,7 +28,7 @@ int main()
 		}
 		else if (islem=="json")
 		{
-			txt_t_json(dosya);
+			txt_t_json(dosya,f_name);
 		}
 		
 		

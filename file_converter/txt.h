@@ -20,25 +20,48 @@ void txt_t_csv(std::string yol,std::string f_name,int ayrım){
     }
     int sayim=0;
     std::string satir;
-    std::string k_sayi;
     while (std::getline(dosya,satir))
     {
+        if (satir=="")
+        {
+            continue;
+        }
+        
         if (satir==" ")
         {
             sayim++;
         }
-        if (satir==" " && sayim==(ayrım+1))//Satır atlancak yer
+        if (sayim==(ayrım+1) && satir==" ")//Satır atlancak yer
         {
             sayim = 0;
             continue;
         }
-        out<<satir;
+        out<<satir<<",\n";
+    }   
+}
+void txt_t_json(std::string yol,std::string f_name){
+    fs::path ds(f_name);
+    std::ifstream oku(yol);
+    std::ofstream yaz(ds,std::ios::app);
+    if (!oku.is_open())
+    {
+        if (!yaz.is_open())
+        {
+            std::cout<<"Dosyalarınız açılmıyor."<<endl;
+            return;
+        }
+    }
+    std::string satir;
+    while (std::getline(oku,satir))
+    {
+        if (satir==",")
+        {
+            satir=",\n";
+        }
+        yaz<<satir;
     }
     
     
-}
-void txt_t_json(std::string yol){
-
 }
 
 #endif // txt
