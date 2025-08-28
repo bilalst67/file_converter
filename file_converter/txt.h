@@ -1,11 +1,14 @@
 #ifndef txt
 #define txt
 #include <iostream>
-#include <string>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <filesystem>
+#include <algorithm>
 namespace fs=std::filesystem;
-void txt_t_csv(std::string yol,std::string f_name,int ayrım){
+
+void txt_t_csv(const string& yol,const string& f_name,int ayrım){
     fs::path csv(f_name);
     std::ifstream dosya(yol);
     if (!dosya.is_open())
@@ -39,10 +42,11 @@ void txt_t_csv(std::string yol,std::string f_name,int ayrım){
         out<<satir<<",\n";
     }   
 }
-void txt_t_json(std::string yol,std::string f_name){
-    fs::path ds(f_name);
+
+void txt_t_json(const string& yol,const string& f_name){
+    fs::path ds(f_name+".json");
     std::ifstream oku(yol);
-    std::ofstream yaz(ds,std::ios::app);
+    std::ofstream yaz(ds,std::ios::trunc);
     if (!oku.is_open())
     {
         if (!yaz.is_open())
@@ -51,17 +55,37 @@ void txt_t_json(std::string yol,std::string f_name){
             return;
         }
     }
+    int sayac;
+    bool first=true;
     std::string satir;
-    while (std::getline(oku,satir))
+    yaz<<"{\n";
+    while (getline(oku,satir))
     {
-        if (satir==",")
-        {
-            satir=",\n";
-        }
-        yaz<<satir;
-    }
-    
-    
-}
+        if (satir.empty())continue;
+        std::string key,value;
+        istringstream iss(satir);
+        iss>>key>>value;
+        if(!first) yaz<<',\n';
 
+        first=false;
+
+        bool isnumb = !value.empty() && all_of(value.begin(),value.end(), ::isdigit);
+        bool isbool = (value=="true" || value=="True" || value=="false" || value=="False");
+
+        
+        yaz<<" \""<<key<<"\": ";
+        
+        if (isnumb){
+            yaz<<value;
+        }
+        else if(isbool){
+            std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+            yaz<<value;
+        }
+        else{
+            yaz<<" \""<<value<<"\"";
+        }
+    }
+yaz<<"}";
+}
 #endif // txt
