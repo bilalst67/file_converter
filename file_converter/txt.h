@@ -65,7 +65,7 @@ void txt_t_json(const string& yol,const string& f_name){
         std::string key,value;
         istringstream iss(satir);
         iss>>key>>value;
-        if(!first) yaz<<',\n';
+        if(!first) yaz<<",\n";
 
         first=false;
 

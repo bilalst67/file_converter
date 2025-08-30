@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include "tinyfiledialogs.h"
 #include "filefound.h"
 #include "txt.h"
 using namespace std;
@@ -8,8 +9,15 @@ namespace fs = std::filesystem;
  
 int main()
 {
-	fs::path dosya("lale.txt");
-	string yol= uzantı("lale.txt");
+	const char * ds = tinyfd_openFileDialog(
+		"Dosya Seç", /* title */
+		"", /* default path */
+		0, /* number of filter patterns */
+		NULL, /* filter patterns */
+		NULL, /* single filter description */
+		0); /* allow multiple selects */
+	fs::path dosya(ds);
+	string yol= dosya.extension().string();
 	if (yol == ".txt")
 	{
 		string islem;
@@ -24,14 +32,16 @@ int main()
 			int ayrım;
 			cout<<"\nDosyanızı kaç bosluk sonrası kesiyim."<<endl;
 			cin>>ayrım;
-			txt_t_csv(dosya,tam_yol,ayrım);
+			txt_t_csv(dosya.string(),tam_yol,ayrım);
 		}
 		else if (islem=="json")
 		{
-			txt_t_json(dosya,f_name);
+			txt_t_json(dosya.string(),f_name);
 		}
-		
-		
+		else
+		{
+			cout<<"Böyle bir dosya türü yok."<<endl;
+		}
 	}
 	
 	return 0;
