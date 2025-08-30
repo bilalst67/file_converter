@@ -17,14 +17,14 @@ int main()
 		NULL, /* single filter description */
 		0); /* allow multiple selects */
 	fs::path dosya(ds);
-	string yol= dosya.extension().string();
-	if (yol == ".txt")
+	string uzantı= dosya.extension().string();
+	if (uzantı == ".txt")
 	{
 		string islem;
 		string f_name;
-		cout<<"Hangi dosya yapmak istiyosun."<<endl;
+		cout<<"Hangi dosya yapmak istiyosun.(Noktasız yaz):";
 		cin>>islem;
-		cout<<"\nOluşturulan dosyanın ismi tam ne olsun."<<endl;
+		cout<<"\nOluşturulan dosyanın ismi tam ne olsun (Uzantıyı yazma) : "<<endl;
 		cin>>f_name;
 		string tam_yol=f_name+"."+islem;
 		if (islem=="csv")
@@ -37,6 +37,12 @@ int main()
 		else if (islem=="json")
 		{
 			txt_t_json(dosya.string(),f_name);
+		}
+		else if (islem =="xml")
+		{
+			string top_tag;
+			cout<<"Üst tagınızın ismi nedir: (Txt formatı bu olmalı [key value](paranteze takılma))";cin>>top_tag;
+			txt_t_xml(dosya,f_name,top_tag);
 		}
 		else
 		{
