@@ -1,6 +1,8 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <fmt/core.h>
 #include "tinyfiledialogs.h"
 #include "filefound.h"
 #include "txt.h"
@@ -40,9 +42,16 @@ int main()
 		}
 		else if (islem =="xml")
 		{
-			string top_tag;
-			cout<<"Üst tagınızın ismi nedir: (Txt formatı bu olmalı [key value](paranteze takılma))";cin>>top_tag;
-			txt_t_xml(dosya,f_name,top_tag);
+			vector<string> tags;
+			int units;cout<<"Kaç tane üst tagınız var (bilgi taglarını sayma): ";cin>>units;
+			for (size_t i = 0; i < units; i++)
+			{
+				string tag;
+				cout<<"Üst taglarınız girin: ";cin>>tag;
+				tags.push_back(tag);
+				cout<<fmt::format("\nKalan: {}",(units-i-1));
+			}			
+			txt_t_xml(dosya,f_name,tags,units);
 		}
 		else
 		{

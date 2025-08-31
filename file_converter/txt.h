@@ -10,6 +10,10 @@
 using namespace std;
 namespace fs=std::filesystem;
 
+string indent(int level){
+    return string(level * 4,' ');
+}
+
 void txt_t_csv(const string& ds,const string& f_name,int ayrım){
     fs::path csv(f_name);
     std::ifstream dosya(ds);
@@ -86,18 +90,21 @@ void txt_t_json(const string& dsy,const string& f_name){
 yaz<<"}";
 }
 
-void txt_t_xml(const string& ds,const string& f_name,const string& top_tag){
-    
-    cout<<"Bu oluşturulcak xml dosyası nested olmicak.\n"<<endl;
-    
+void txt_t_xml(const string& ds,const string& f_name,const vector<string>& tags,const int& units){
     ofstream yaz(f_name+".xml");
     ifstream oku(ds);
     if (!oku.is_open() || !yaz.is_open()) {
         cout << "Dosyalarınız açılmıyor." << endl;
         return;
     }
+
+    for (int i = 0; i < units; i++)
+    {
+        yaz<<indent(i)<<fmt::format("<{}>\n",tags[i]);
+    }
+
     string satir;
-    yaz<<fmt::format("<{}>",top_tag);
+
     while (getline(oku,satir))
     {
         if (satir.empty())continue;
@@ -106,11 +113,14 @@ void txt_t_xml(const string& ds,const string& f_name,const string& top_tag){
         kk>>key;
         getline(kk, value);
         if (!value.empty() && value[0] == ' ') value = value.substr(1);
-        yaz<<fmt::format("<{}>{}</{}>",key,value,key);
+        yaz<<indent(units)<<fmt::format("<{}>{}</{}>\n",key,value,key);
     }
-    yaz<<fmt::format("</{}>",top_tag);
-    yaz.close();
-    oku.close();
-    cout<<"Dosyanız xml e çevrilmiştir yanlış çevirilmiş olabilir.";
+
+    for (int i = units; i >= 0; i--)
+    {
+        yaz<<indent(i)<<fmt::format("</{}>\n",tags[i]);
+    }
+
+       
 }
 #endif // txt
