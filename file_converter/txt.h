@@ -66,7 +66,7 @@ void txt_t_json(const string& dsy,const string& f_name){
         std::string key,value;
         istringstream iss(satir);
         iss>>key>>value;
-        if(!first) yaz<<',\n';
+        if(!first) yaz<<",\n";
 
         first=false;
 
@@ -90,37 +90,59 @@ void txt_t_json(const string& dsy,const string& f_name){
 yaz<<"}";
 }
 
-void txt_t_xml(const string& ds,const string& f_name,const vector<string>& tags,const int& units){
-    ofstream yaz(f_name+".xml");
+void txt_t_xml(const string& ds,const string& f_name) {
+    ofstream yaz(f_name + ".xml");
     ifstream oku(ds);
+
     if (!oku.is_open() || !yaz.is_open()) {
         cout << "Dosyalarınız açılmıyor." << endl;
         return;
     }
 
-    for (int i = 0; i < units; i++)
-    {
-        yaz<<indent(i)<<fmt::format("<{}>\n",tags[i]);
-    }
-
+    vector<string> stack; // aktif parent stack
     string satir;
+    while (getline(oku, satir)) {
+        if (satir.empty()) continue;
 
-    while (getline(oku,satir))
-    {
-        if (satir.empty())continue;
-        istringstream kk(satir);
-        string key,value;
-        kk>>key;
-        getline(kk, value);
-        if (!value.empty() && value[0] == ' ') value = value.substr(1);
-        yaz<<indent(units)<<fmt::format("<{}>{}</{}>\n",key,value,key);
+        // sondaki ')' karakterlerini say ve sil
+        int close_count = 0;
+        while (!satir.empty() && satir.back() == ')') {
+            satir.pop_back();
+            close_count++;
+        }
+
+        // gerekiyorsa kapatma etiketlerini yaz
+        for (int i = 0; i < close_count; i++) {
+            if (!stack.empty()) {
+                string parent = stack.back();
+                stack.pop_back();
+                yaz << indent(stack.size()) << fmt::format("</{}>\n", parent);
+            }
+        }
+
+        if (satir.empty()) continue;
+
+        istringstream iss(satir);
+        string first;
+        iss >> first;
+
+        // Eğer tag açılışı ise (örnek: persons()
+        if (!first.empty() && first.back() == '(') {
+            first.pop_back(); // '(' kaldır
+            stack.push_back(first);
+            yaz << indent(stack.size() - 1) << fmt::format("<{}>\n", first);
+        }
+        // Eğer key-value satırı ise
+        else if (!first.empty()) {
+            string key = first, value;
+            getline(iss, value);
+            if (!value.empty() && value[0] == ' ')
+                value = value.substr(1);
+            yaz << indent(stack.size()) << fmt::format("<{}>{}</{}>\n", key, value, key);
+        }
     }
+}
 
-    for (int i = units; i >= 0; i--)
-    {
-        yaz<<indent(i)<<fmt::format("</{}>\n",tags[i]);
-    }
-
-       
+void txt_t_yml(const string& dsy,const string& f_name){
 }
 #endif // txt

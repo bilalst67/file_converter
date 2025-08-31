@@ -42,16 +42,8 @@ int main()
 		}
 		else if (islem =="xml")
 		{
-			vector<string> tags;
-			int units;cout<<"Kaç tane üst tagınız var (bilgi taglarını sayma): ";cin>>units;
-			for (size_t i = 0; i < units; i++)
-			{
-				string tag;
-				cout<<"Üst taglarınız girin: ";cin>>tag;
-				tags.push_back(tag);
-				cout<<fmt::format("\nKalan: {}",(units-i-1));
-			}			
-			txt_t_xml(dosya,f_name,tags,units);
+			cout<<"Şimdi oluşturulacak xml öncesi bilgilendirme!!\nTxt formatınız şu şekilde olmalıdır:\npersons(\n\tperson(\n\t\tname bilal))\nFormat buşekilde olmaz ise taglarınızı tam almaz."<<endl;
+			txt_t_xml(dosya,f_name);
 		}
 		else
 		{
