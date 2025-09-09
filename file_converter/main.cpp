@@ -9,8 +9,7 @@
 using namespace std;
 namespace fs = std::filesystem;
  
-int main()
-{
+int main(){
 	const char * ds = tinyfd_openFileDialog(
 		"Dosya Seç", /* title */
 		"", /* default path */
@@ -24,17 +23,16 @@ int main()
 	{
 		string islem;
 		string f_name;
-		cout<<"Hangi dosya yapmak istiyosun.(Noktasız yaz):";
+		cout<<"Hangi dosya yapmak istiyosun.(Noktasız yaz) : ";
 		cin>>islem;
-		cout<<"\nOluşturulan dosyanın ismi tam ne olsun (Uzantıyı yazma) : "<<endl;
+		cout<<"\nOluşturulan dosyanın ismi tam ne olsun (Uzantıyı yazma) : ";
 		cin>>f_name;
-		string tam_yol=f_name+"."+islem;
 		if (islem=="csv")
 		{
-			int ayrım;
+			int ayrim;
 			cout<<"\nDosyanızı kaç bosluk sonrası kesiyim."<<endl;
-			cin>>ayrım;
-			txt_t_csv(dosya.string(),tam_yol,ayrım);
+			cin>>ayrim;
+			txt_t_csv(dosya.string(),f_name,ayrim);
 		}
 		else if (islem=="json")
 		{
@@ -45,9 +43,14 @@ int main()
 			cout<<"Şimdi oluşturulacak xml öncesi bilgilendirme!!\nTxt formatınız şu şekilde olmalıdır:\npersons(\n\tperson(\n\t\tname bilal))\nFormat buşekilde olmaz ise taglarınızı tam almaz."<<endl;
 			txt_t_xml(dosya,f_name);
 		}
+		else if(islem=="yml")
+		{
+			cout<<"Şimdi oluşturulacak yml öncesi bilgilendirme!!\nTxt formatınız şu şekilde olmalıdır:\nBir tagı üst tag olarak ayarlicaksanız başına'/'koyun\n\n/persons:\nperson:\nname:bilal\nskill:ninja\nFormat buşekilde olmaz ise taglarınızı tam almaz."<<endl;
+			txt_t_yml(dosya.string(),f_name);
+		}
 		else
 		{
-			cout<<"Böyle bir dosya türü yok."<<endl;
+			cout<<"Böyle bir dosya türü şuanlık işleyemiyoruz."<<endl;
 		}
 	}
 	
