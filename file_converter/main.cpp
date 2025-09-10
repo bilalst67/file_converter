@@ -45,7 +45,7 @@ int main(){
 		}
 		else if(islem=="yml")
 		{
-			cout<<"Şimdi oluşturulacak yml öncesi bilgilendirme!!\nTxt formatınız şu şekilde olmalıdır:\nBir tagı üst tag olarak ayarlicaksanız başına'/'koyun\n\n/persons:\nperson:\nname:bilal\nskill:ninja\nFormat buşekilde olmaz ise taglarınızı tam almaz."<<endl;
+			cout<<"Şimdi oluşturulacak yml öncesi bilgilendirme!!\nTxt formatınız şu şekilde olmalıdır:\npersons.person.name.yusuf\npersons.person.skill.python\npersons.person.language.Türkçe\ncompanys.company.name.paperworks\ncompanys.company.founder.name.Yusuf\ncompanys.company.founder.skill.python-renpy"<<endl;
 			txt_t_yml(dosya.string(),f_name);
 		}
 		else
