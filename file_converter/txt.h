@@ -14,18 +14,6 @@ namespace fs=std::filesystem;
 string indent(int level){
     return string(level * 4,' ');
 }
-
-int find_vc(vector<string>d_name,string key){
-    for (int i = 0; i < d_name.size(); i++)
-    {
-        if (d_name[i]==key)
-        {
-            return i;
-        }
-    }
-    return-1;
-}
-
 static vector<string> split(const string& s, char delim) {
     vector<string> out;
     string tmp;
@@ -51,7 +39,7 @@ static bool is_number(const string& s) {
 static bool is_bool(const string& s) {
     string t = s;
     transform(t.begin(), t.end(), t.begin(), ::tolower);
-    return t == "true" || t == "false";
+    return t == "true" || "True" || "false" || "False";
 }
 
 void txt_t_csv(const string& ds,const string& f_name,int ayrım){
@@ -100,17 +88,13 @@ void txt_t_json(const string& dsy,const string& f_name){
         if(!first) yaz<<",\n";
 
         first=false;
-
-        bool isnumb = !value.empty() && all_of(value.begin(),value.end(), ::isdigit);
-        bool isbool = (value=="true" || value=="True" || value=="false" || value=="False");
-
         
         yaz<<fmt::format("  \"{}\" : ",key);
         
-        if (isnumb){
+        if (is_number(value)){
             yaz<<value<<endl;
         }
-        else if(isbool){
+        else if(is_bool(value)){
             std::transform(value.begin(), value.end(), value.begin(), ::tolower);
             yaz<<value<<endl;
         }
@@ -130,51 +114,88 @@ void txt_t_xml(const string& ds,const string& f_name) {
         return;
     }
 
-    vector<string> stack; // aktif parent stack
+    vector<string> prevstack; // geçmiş parent stack
     string satir;
+    yaz<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     while (getline(oku, satir)) {
         if (satir.empty()) continue;
-
-        // sondaki ')' karakterlerini say ve sil
-        int close_count = 0;
-        while (!satir.empty() && satir.back() == ')') {
-            satir.pop_back();
-            close_count++;
+        
+        vector<string>partsraw=split(satir,'.');
+        vector<string>parts;
+        for (auto &p : partsraw)
+        {
+            string t=trim(p);
+            if(!t.empty())parts.push_back(t);
+        }
+        string value;
+        vector<string>keys;
+        if (parts.size()==1)
+        {
+            keys.push_back(parts[0]);
+            value="";
+        }
+        else{
+            keys.assign(parts.begin(), parts.end() - 1);
+            value=parts.back();
         }
 
-        // gerekiyorsa kapatma etiketlerini yaz
-        for (int i = 0; i < close_count; i++) {
-            if (!stack.empty()) {
-                string parent = stack.back();
-                stack.pop_back();
-                yaz << indent(stack.size()) << fmt::format("</{}>\n", parent);
+        //Hangi keyler aynı.
+        int common=0;
+        while (common< (int)prevstack.size() && common<(int)keys.size() && keys[common]==prevstack[common]){++common;}
+        for (int i = prevstack.size() - 1; i >= common+1; --i)
+            {
+                yaz << fmt::format("{}</{}>\n", indent(i-1), prevstack[i-1]);
             }
-        }
+        
+        for (int i = common; i < (int)keys.size()-1; i++){yaz<<fmt::format("{}<{}>\n",indent(i),keys[i]);}
 
-        if (satir.empty()) continue;
+        if (!keys.empty()){
+            int lastIndex = (int)keys.size() - 1;
+            string lastKey = keys.back();
 
-        istringstream iss(satir);
-        string first;
-        iss >> first;
+            // Eğer value içindeki '-' ile liste benzetiliyorsa split et
+            // Örn: "python-renpy" veya "-python-c++-..." veya "python" tek eleman
+            vector<string> items = split(value, '-');
+            // temizle empty tokenleri
+            vector<string> tokens;
+            for (auto &it : items) {
+                string tt = trim(it);
+                if (!tt.empty()) tokens.push_back(tt);
+            }
 
-        // Eğer tag açılışı ise (örnek: persons()
-        if (!first.empty() && first.back() == '(') {
-            first.pop_back(); // '(' kaldır
-            stack.push_back(first);
-            yaz << indent(stack.size() - 1) << fmt::format("<{}>\n", first);
+            if (tokens.size() > 1) {                
+                for (auto &it : tokens) {
+                    yaz << fmt::format("{}<{}>{}</{}>\n",indent(lastIndex),lastKey,it,lastKey);
+                }
+            }else {
+                // tek değer veya boş
+                if (value.empty()) {
+                    // sadece map başlat (value yok)
+                    yaz << indent(lastIndex) << lastKey << ":\n";
+                } else {
+                    // tek değer: tip kontrolü
+                    if (is_number(value) || is_bool(value)) {
+                        yaz << fmt::format("{}<{}>{}</{}>\n",indent(lastIndex),lastKey,value,lastKey);
+                    } else {
+                        yaz << fmt::format("{}<{}>'{}'</{}>\n",indent(lastIndex),lastKey,value,lastKey);
+                    }
+                }
+            }
+        } else {
+            // keys boşsa => doğrudan top-level value? (nadir durum)
+            // parts boyutu 1 idi; yaz key:
+            yaz << indent(0) << value << "\n";
         }
-        // Eğer key-value satırı ise
-        else if (!first.empty()) {
-            string key = first, value;
-            getline(iss, value);
-            if (!value.empty() && value[0] == ' ')
-                value = value.substr(1);
-            yaz << indent(stack.size()) << fmt::format("<{}>{}</{}>\n", key, value, key);
-        }
+        
+        
+        // prevKeys'i güncelle
+        prevstack = keys;
     }
+    for (int i = prevstack.size() - 1; i >= 1; --i)
+        {
+            yaz << fmt::format("{}</{}>\n", indent(i-1), prevstack[i-1]);
+        }
 }
-
-
 // txt format: path.parts.value  (son parça value)
 // Örnek: persons.person.name.yusuf
 void txt_t_yml(const string& dsy, const string& f_name) {
