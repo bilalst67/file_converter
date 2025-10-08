@@ -11,35 +11,37 @@
 using namespace std;
 namespace fs=std::filesystem;
 
-string indent(int level){
-    return string(level * 4,' ');
+string trim(const string& str) {
+    size_t first = str.find_first_not_of(" \t\n\r");
+    if (string::npos == first) return str;
+    size_t last = str.find_last_not_of(" \t\n\r");
+    return str.substr(first, (last - first + 1));
 }
-static vector<string> split(const string& s, char delim) {
-    vector<string> out;
-    string tmp;
-    stringstream ss(s);
-    while (getline(ss, tmp, delim)) {
-        out.push_back(tmp);
+
+vector<string> split(const string& s, char delimiter) {
+    vector<string> tokens;
+    string token;
+    std::istringstream tokenStream(s);
+    while (std::getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
     }
-    return out;
+    return tokens;
 }
 
-static string trim(const string& s) {
-    size_t a = s.find_first_not_of(" \t\r\n");
-    if (a == string::npos) return "";
-    size_t b = s.find_last_not_of(" \t\r\n");
-    return s.substr(a, b - a + 1);
+string indent(int level) {
+    return string(level * 4, ' '); // 4 boşluklu girinti
 }
 
-static bool is_number(const string& s) {
-    if (s.empty()) return false;
-    return all_of(s.begin(), s.end(), [](unsigned char c){ return isdigit(c); });
+bool is_number(const string& s) {
+    if(s.empty()) return false;
+    for (char const &c : s) {
+        if (std::isdigit(c) == 0 && c != '.') return false;
+    }
+    return true;
 }
 
-static bool is_bool(const string& s) {
-    string t = s;
-    transform(t.begin(), t.end(), t.begin(), ::tolower);
-    return t == "true" || "True" || "false" || "False";
+bool is_bool(const string& s) {
+    return s == "true" || s == "false";
 }
 
 void txt_t_csv(const string& ds,const string& f_name,int ayrım){
@@ -68,41 +70,94 @@ void txt_t_csv(const string& ds,const string& f_name,int ayrım){
         }
 }
 
-void txt_t_json(const string& dsy,const string& f_name){
-    fs::path ds(f_name+".json");
+void txt_t_json(const string& dsy, const string& f_name) {
+    fs::path ds(f_name + ".json");
     std::ifstream oku(dsy);
-    std::ofstream yaz(ds,std::ios::trunc);
+    std::ofstream yaz(ds, std::ios::trunc);
+
     if (!oku.is_open() || !yaz.is_open()) {
-        cout << "Dosyalarınız açılmıyor." << endl;
+        cout << "Dosyalarınız açılamıyor." << endl;
         return;
     }
-    bool first=true;
-    std::string satir;
-    yaz<<"{\n";
-    while (getline(oku,satir))
-    {
-        if (satir.empty())continue;
-        std::string key,value;
-        istringstream iss(satir);
-        iss>>key>>value;
-        if(!first) yaz<<",\n";
 
-        first=false;
+    yaz << "{\n";
+
+    vector<string> prev_path;
+    bool is_first_line_overall = true;
+
+    string satir;
+    while (getline(oku, satir)) {
+        if (satir.empty()) continue;
+
+        // 1. SATIRI AYRIŞTIR: Yolu (path), son anahtarı (lastKey) ve değeri (value) ayır.
+        vector<string> parts;
+        for (const auto& p : split(satir, '.')) {
+            string t = trim(p);
+            if (!t.empty()) parts.push_back(t);
+        }
+        if (parts.size() < 2) continue;
+
+        vector<string> path(parts.begin(), parts.end() - 2);
+        string lastKey = parts[parts.size() - 2];
+        string value = parts.back();
+
+        // 2. ORTAK YOLU BUL
+        int common_depth = 0;
+        while (common_depth < prev_path.size() && common_depth < path.size() && prev_path[common_depth] == path[common_depth]) {
+            common_depth++;
+        }
+
+        // 3. KAPANAN YAPILARI YAZDIR
+        for (int i = prev_path.size(); i > common_depth; --i) {
+            yaz << "\n" << indent(i) << "]\n" << indent(i-1) << "}";
+        }
+
+        // 4. YENİ YOLU AÇ
+        for (int i = common_depth; i < path.size(); ++i) {
+             if (!is_first_line_overall) {
+                yaz << ",\n";
+            }
+            if (i == 0) {
+                yaz << indent(i) << "\"" << path[i] << "\": [";
+            } else {
+                yaz << indent(i) << "{\"" << path[i] << "\": [";
+            }
+            is_first_line_overall = true; // Her yeni dizi açıldığında, içindeki ilk eleman virgül almaz.
+        }
+
+        // 5. ANAHTAR-DEĞER ÇİFTİNİ YAZDIR
+        if (!is_first_line_overall) {
+            yaz << "\n" << indent(path.size() + 1) << ",";
+        }
         
-        yaz<<fmt::format("  \"{}\" : ",key);
-        
-        if (is_number(value)){
-            yaz<<value<<endl;
+        vector<string> tokens;
+        for(const auto& val_part : split(value, '-')) {
+            string t = trim(val_part);
+            if (!t.empty()) tokens.push_back(t);
         }
-        else if(is_bool(value)){
-            std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-            yaz<<value<<endl;
+
+        bool first_token = true;
+        for (const auto& token : tokens) {
+            if (!first_token) {
+                 yaz << ",\n";
+            }
+            yaz << "\n" << indent(path.size()) << "{\"" << lastKey << "\": ";
+            if (is_number(token) || is_bool(token)) {
+                yaz << token << "}";
+            } else {
+                yaz << "\"" << token << "\"}";
+            }
+            first_token = false;
         }
-        else{
-            yaz<<fmt::format("\"{}\"",value)<<endl;
-        }
+
+        prev_path = path;
+        is_first_line_overall = false;
     }
-yaz<<"}";
+
+    // 6. DOSYA SONUNDA TÜM AÇIK YAPILARI KAPAT
+    for (int i = prev_path.size(); i > 0; --i) {
+        yaz << "\n" << indent(i) << "]\n" << indent(i-1) << "}";
+    }
 }
 
 void txt_t_xml(const string& ds,const string& f_name) {
@@ -196,6 +251,7 @@ void txt_t_xml(const string& ds,const string& f_name) {
             yaz << fmt::format("{}</{}>\n", indent(i-1), prevstack[i-1]);
         }
 }
+
 // txt format: path.parts.value  (son parça value)
 // Örnek: persons.person.name.yusuf
 void txt_t_yml(const string& dsy, const string& f_name) {

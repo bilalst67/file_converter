@@ -1,0 +1,37 @@
+{
+"persons": [    {"person": [
+        {"name": "yusuf"}
+            ,
+        {"skill": "python"}
+            ,
+        {"language": "Türkçe"}
+        ]
+    }
+    ]
+},
+"companys": [    {"company": [
+        {"name": "paperworks"},
+        {"founder": [
+            {"name": "Yusuf"}
+                ,
+            {"skill": "python"},
+
+            {"skill": "renpy"}
+            ]
+        },
+        {"ceo": [
+            {"name": "bilal"}
+                ,
+            {"skill": "python"},
+
+            {"skill": "c++"},
+
+            {"skill": "c#"},
+
+            {"skill": "java"}
+            ]
+        }
+        ]
+    }
+    ]
+}
