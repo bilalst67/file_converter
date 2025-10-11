@@ -3,14 +3,20 @@
 #include <string>
 #include <vector>
 #include <fmt/core.h>
-/*#include "tinyfiledialogs.h"
-#include "filefound.h"*/
+#include "tinyfiledialogs.h"
+#include "filefound.h"
 #include "txt.h"
 using namespace std;
 namespace fs = std::filesystem;
  
 int main(){
-	const char * ds = "/home/bilal/Belgeler/GitHub/txt.txt";
+	const char * ds = tinyfd_openFileDialog(
+		"Dosya Seç", /* title */
+		"", /* default path */
+		0, /* number of filter patterns */
+		NULL, /* filter patterns */
+		NULL, /* single filter description */
+		0); /* allow multiple selects */
 	fs::path dosya(ds);
 	string uzantı= dosya.extension().string();
 	if (uzantı == ".txt")
