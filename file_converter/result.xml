@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persons>
+    <person>
+        <name>yusuf</name>
+        <skill>python</skill>
+        <language>Türkçe</language>
+    </person>
+</persons>
+<companys>
+    <company>
+        <name>paperworks</name>
+        <founder>
+            <name>Yusuf</name>
+            <skill>python</skill>
+            <skill>renpy</skill>
+        </founder>
+        <ceo>
+            <name>bilal</name>
+            <skill>python</skill>
+            <skill>c++</skill>
+            <skill>c#</skill>
+            <skill>java</skill>
+        </ceo>
+    </company>
+</companys>

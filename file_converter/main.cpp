@@ -1,14 +1,15 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <fmt/core.h>
 #include "tinyfiledialogs.h"
 #include "filefound.h"
 #include "txt.h"
 using namespace std;
 namespace fs = std::filesystem;
  
-int main()
-{
+int main(){
 	const char * ds = tinyfd_openFileDialog(
 		"Dosya Seç", /* title */
 		"", /* default path */
@@ -17,30 +18,39 @@ int main()
 		NULL, /* single filter description */
 		0); /* allow multiple selects */
 	fs::path dosya(ds);
-	string yol= dosya.extension().string();
-	if (yol == ".txt")
+	string uzantı= dosya.extension().string();
+	if (uzantı == ".txt")
 	{
 		string islem;
 		string f_name;
-		cout<<"Hangi dosya yapmak istiyosun."<<endl;
+		cout<<"Hangi dosya yapmak istiyosun.(Noktasız yaz) : ";
 		cin>>islem;
-		cout<<"\nOluşturulan dosyanın ismi tam ne olsun."<<endl;
+		cout<<"\nOluşturulan dosyanın ismi tam ne olsun (Uzantıyı yazma) : ";
 		cin>>f_name;
-		string tam_yol=f_name+"."+islem;
 		if (islem=="csv")
 		{
-			int ayrım;
+			int ayrim;
 			cout<<"\nDosyanızı kaç bosluk sonrası kesiyim."<<endl;
-			cin>>ayrım;
-			txt_t_csv(dosya.string(),tam_yol,ayrım);
+			cin>>ayrim;
+			txt_t_csv(dosya.string(),f_name,ayrim);
 		}
 		else if (islem=="json")
 		{
 			txt_t_json(dosya.string(),f_name);
 		}
+		else if (islem =="xml")
+		{
+			cout<<"Şimdi oluşturulacak xml öncesi bilgilendirme!!\nTxt formatınız şu şekilde olmalıdır:\npersons.person.name.yusuf\npersons.person.skill.python\npersons.person.language.Türkçe\ncompanys.company.name.paperworks\ncompanys.company.founder.name.Yusuf\ncompanys.company.founder.skill.python-renpy"<<endl;
+			txt_t_xml(dosya,f_name);
+		}
+		else if(islem=="yml")
+		{
+			cout<<"Şimdi oluşturulacak yml öncesi bilgilendirme!!\nTxt formatınız şu şekilde olmalıdır:\npersons.person.name.yusuf\npersons.person.skill.python\npersons.person.language.Türkçe\ncompanys.company.name.paperworks\ncompanys.company.founder.name.Yusuf\ncompanys.company.founder.skill.python-renpy"<<endl;
+			txt_t_yml(dosya.string(),f_name);
+		}
 		else
 		{
-			cout<<"Böyle bir dosya türü yok."<<endl;
+			cout<<"Böyle bir dosya türü şuanlık işleyemiyoruz."<<endl;
 		}
 	}
 	
