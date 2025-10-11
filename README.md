@@ -119,7 +119,7 @@ Keys separated by a dot (`.`) create a hierarchical structure.
 persons.person.name.yusuf
 persons.person.skill.python
 persons.person.language.Türkçe
-companys.company.name.paperworks
+companys.company.name.Github
 companys.company.founder.name.Yusuf
 companys.company.founder.skill.python-renpy
 ```
